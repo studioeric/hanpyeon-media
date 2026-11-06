@@ -7,8 +7,8 @@ export const BIZ = {
   mailOrderNo: '',   // 통신판매업 신고번호
   address: '',       // 사업장 주소
   kakao: '',         // 카카오톡 채널 이름
-  email: '',         // 고객센터 이메일
-  effective: ''      // 약관 시행일 (예: 2026년 11월 1일)
+  email: 'qwove.corp@gmail.com',   // 고객센터 이메일
+  effective: '2026년 11월 6일'      // 약관 시행일 (예: 2026년 11월 1일)
 };
 
 export const STATUS = {

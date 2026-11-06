@@ -8,7 +8,7 @@ const { p: id, t: token } = params();
 if (!id || !token) location.replace('/');
 
 const S = { project: null, tpl: null, cfg: null, shownKey: '', widgets: null, timer: null };
-const videoUrl = (kind, dl) => `/api/projects/${id}/video/${kind}?token=${encodeURIComponent(token)}${dl ? '&download=1' : ''}`;
+const videoUrl = (kind, dl) => `/api/projects/${id}/video/${kind}?token=${encodeURIComponent(token)}&v=${encodeURIComponent(S.project.updatedAt || '')}${dl ? '&download=1' : ''}`;
 
 function waitBox(title, text) {
   return `<div class="wait"><div class="spinner" aria-hidden="true"></div><span class="serif" style="font-size: 20px">${title}</span><span class="small sub" style="max-width: 420px; line-height: 1.7">${text}</span></div>`;
