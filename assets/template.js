@@ -22,6 +22,7 @@ function play(t) {
   $('#buy').innerHTML = ok
     ? `<div class="price-row"><span>${esc(typeLabel(S.data, t.category, t.type))}</span><b>${won(t.price)}</b>${t.listPrice ? `<s>${won(t.listPrice)}</s>` : ''}</div>
        <p class="small sub">${esc(spec)}</p>
+       ${t.uhdPrice ? `<p class="small sub">풀HD 기본, 4K 초고화질은 ${won(t.uhdPrice)}</p>` : ''}
        <button class="btn lg block" type="button" id="makeBtn">이 영상 만들기</button>`
     : `<p class="soon-note">곧 출시돼요. 조금만 기다려 주세요.</p>`;
   history.replaceState(null, '', seriesUrl(S.series, t.type === S.items[0].type ? '' : t.type));

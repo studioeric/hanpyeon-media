@@ -61,7 +61,7 @@ function render() {
       $('#side').innerHTML = summaryCard(true);
       break;
     case 'final_failed':
-      $('#player').innerHTML = infoBox('완성 영상을 확인하고 있어요', '만드는 중에 문제가 생겨 직접 확인하고 있어요. 결제는 그대로 안전하게 유지되고, 완성되면 이곳에서 받을 수 있어요.');
+      $('#player').innerHTML = infoBox('완성 영상을 확인하고 있어요', '만드는 중에 문제가 생겨 직접 확인하고 있어요. 24시간 안에 완성되지 않으면 qwove.corp@gmail.com으로 알려 주세요. 전액 환불해 드려요. 결제는 그대로 안전하게 유지되고, 완성되면 이곳에서 받을 수 있어요.');
       $('#actions').innerHTML = ''; $('#side').innerHTML = summaryCard(true);
       break;
     case 'delivered':
@@ -100,15 +100,22 @@ function summaryCard(paid) {
 // ---------- 결제 ----------
 async function renderCheckout() {
   const p = S.project, t = S.tpl;
+  if (!S.cfg.payOpen) {
+    $('#side').innerHTML = `<div class="card soft"><h2 class="serif" style="margin: 0 0 8px; font-size: 21px">정식 오픈 준비 중이에요</h2>
+      <p class="small sub" style="margin: 0">결제는 곧 열려요. 지금은 미리보기까지 무료로 만들어 볼 수 있어요.</p></div>`;
+    return;
+  }
   const phone = (p.data.contact || {}).phone || '';
   $('#side').innerHTML = `<div class="card soft" style="display: flex; flex-direction: column; gap: 16px">
     <h2 class="serif" style="margin: 0; font-size: 21px">결제하고 받기</h2>
     <div style="display: flex; flex-direction: column; gap: 8px">
       <div class="sum-row"><span>${esc(t.name)}</span>${t.listPrice ? `<s class="sub">${won(t.listPrice)}</s>` : ''}</div>
       ${t.listPrice ? `<div class="sum-row small" style="color: var(--rose-ink)"><span>할인</span><span>-${won(t.listPrice - t.price)}</span></div>` : ''}
-      <div class="sum-row total"><span>결제 금액</span><b>${won(t.price)}</b></div>
+      ${t.uhdPrice ? `<label class="check"><input type="radio" name="res" value="fhd" checked> <span>풀HD 1080p <b>${won(t.price)}</b></span></label>
+      <label class="check"><input type="radio" name="res" value="uhd"> <span>4K 초고화질 <b>${won(t.uhdPrice)}</b><br><span class="small sub">완성까지 더 오래 걸리고 파일이 커요. 원본 사진이 선명할수록 차이가 커요.</span></span></label>` : ''}
+      <div class="sum-row total"><span>결제 금액</span><b id="payTotal">${won(t.price)}</b></div>
     </div>
-    <label class="field">휴대폰 번호 <span class="help">제작 내역을 찾을 때 써요</span>
+    <label class="field">휴대폰 번호 <span class="help">주문 확인과 제작 내역 조회에 쓰고, 결제하면 수집에 동의한 것으로 봐요</span>
       <input type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" value="${esc(phone)}">
     </label>
     <div id="payment-method"></div>
@@ -119,6 +126,12 @@ async function renderCheckout() {
     <p class="small sub" style="margin:4px 0 0;line-height:1.7">판매자 ${bizLines()}</p>
   </div>`;
   $('#payBtn').addEventListener('click', pay);
+  document.querySelectorAll('input[name=res]').forEach(r => r.addEventListener('change', () => {
+    const amount = r.value === 'uhd' ? t.uhdPrice : t.price;
+    $('#payTotal').textContent = won(amount);
+    $('#payBtn').textContent = `${won(amount)} 결제하기`;
+    if (S.widgets) S.widgets.setAmount({ currency: 'KRW', value: amount });
+  }));
   if (S.cfg.tossMock) {
     $('#payment-method').innerHTML = '<div class="notice"><b>시험 모드</b> 실제 결제 없이 결제 완료로 처리해요.</div>';
     return;
@@ -154,7 +167,7 @@ async function pay() {
   if (!$('#agreeRefund').checked) { errEl.textContent = '환불 규정을 확인해 주세요.'; errEl.classList.remove('hidden'); return; }
   btn.disabled = true;
   try {
-    const order = await api(`/api/projects/${id}/checkout`, { method: 'POST', token, body: { phone } });
+    const order = await api(`/api/projects/${id}/checkout`, { method: 'POST', token, body: { phone, uhd: document.querySelector('input[name=res]:checked')?.value === 'uhd' } });
     const back = `?p=${encodeURIComponent(id)}&t=${encodeURIComponent(token)}`;
     if (S.cfg.tossMock) {
       location.href = `/success${back}&paymentKey=mock_${Date.now()}&orderId=${encodeURIComponent(order.orderId)}&amount=${order.amount}`;
