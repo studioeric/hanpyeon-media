@@ -17,6 +17,7 @@ export const STATUS = {
   preview_rendering: { label: '미리보기 만드는 중', tone: '' },
   preview_ready: { label: '미리보기 완성', tone: 'ok' },
   failed: { label: '미리보기 실패', tone: 'warn' },
+  bank_waiting: { label: '입금 확인 대기', tone: '' },
   final_queued: { label: '결제 완료 · 대기', tone: 'ok' },
   final_rendering: { label: '완성 영상 만드는 중', tone: 'ok' },
   final_failed: { label: '완성 영상 확인 중', tone: 'warn' },

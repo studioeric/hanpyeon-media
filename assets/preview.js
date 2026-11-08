@@ -60,6 +60,17 @@ function render() {
       $('#actions').innerHTML = ''; $('#note').textContent = '';
       $('#side').innerHTML = summaryCard(true);
       break;
+    case 'bank_waiting': {
+      const bk = S.cfg.bank || {};
+      $('#player').innerHTML = infoBox('입금을 기다리고 있어요', `<b>${esc(bk.name)} ${esc(bk.account)}</b> (예금주 ${esc(bk.holder)})<br>입금액 <b>${won(p.amount)}</b> · 입금자명 <b>${esc((p.data.bank || {}).depositor || '')}</b><br>3일 안에 입금해 주세요. 입금이 확인되면 완성 영상을 만들기 시작해요.`);
+      $('#actions').innerHTML = '<button class="btn line" type="button" id="bankCancel">입금 신청 취소</button>';
+      $('#bankCancel').addEventListener('click', async () => {
+        try { await api(`/api/projects/${id}/bank-cancel`, { method: 'POST', token }); poll(); } catch (err) { toast(err.message); }
+      });
+      $('#note').textContent = '';
+      $('#side').innerHTML = summaryCard(false);
+      break;
+    }
     case 'final_failed':
       $('#player').innerHTML = infoBox('완성 영상을 확인하고 있어요', '만드는 중에 문제가 생겨 직접 확인하고 있어요. 24시간 안에 완성되지 않으면 qwove.corp@gmail.com으로 알려 주세요. 전액 환불해 드려요. 결제는 그대로 안전하게 유지되고, 완성되면 이곳에서 받을 수 있어요.');
       $('#actions').innerHTML = ''; $('#side').innerHTML = summaryCard(true);
@@ -100,7 +111,7 @@ function summaryCard(paid) {
 // ---------- 결제 ----------
 async function renderCheckout() {
   const p = S.project, t = S.tpl;
-  if (!S.cfg.payOpen) {
+  if (!S.cfg.payOpen && !S.cfg.bank) {
     $('#side').innerHTML = `<div class="card soft"><h2 class="serif" style="margin: 0 0 8px; font-size: 21px">정식 오픈 준비 중이에요</h2>
       <p class="small sub" style="margin: 0">결제는 곧 열려요. 지금은 미리보기까지 무료로 만들어 볼 수 있어요.</p></div>`;
     return;
@@ -118,6 +129,15 @@ async function renderCheckout() {
     <label class="field">휴대폰 번호 <span class="help">주문 확인과 제작 내역 조회에 쓰고, 결제하면 수집에 동의한 것으로 봐요</span>
       <input type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" value="${esc(phone)}">
     </label>
+    ${S.cfg.payOpen && S.cfg.bank ? `<div style="display: flex; flex-direction: column; gap: 8px">
+      <label class="check"><input type="radio" name="method" value="card" checked> <span>카드·간편결제</span></label>
+      <label class="check"><input type="radio" name="method" value="bank"> <span>무통장입금</span></label></div>` : ''}
+    <div id="bankBox" class="${S.cfg.payOpen ? 'hidden' : ''}" style="display: flex; flex-direction: column; gap: 12px">
+      <label class="field">입금자명 <span class="help">통장에 찍히는 이름과 같게 적어 주세요</span><input type="text" id="depositor" maxlength="20" autocomplete="name"></label>
+      <label class="field">현금영수증
+        <select id="receiptType"><option value="none">신청 안 함</option><option value="phone">소득공제용 (휴대폰 번호)</option><option value="biz">지출증빙용 (사업자등록번호)</option></select></label>
+      <label class="field hidden" id="receiptField">번호<input type="text" id="receiptNo" inputmode="numeric" maxlength="20"></label>
+    </div>
     <div id="payment-method"></div>
     <div id="agreement"></div>
     <label class="check"><input type="checkbox" id="agreeRefund"> <span>디지털 콘텐츠라 완성 영상을 만들기 시작한 뒤에는 환불이 어렵다는 점을 확인했어요 <a href="/refund" target="_blank">환불 규정</a></span></label>
@@ -129,9 +149,22 @@ async function renderCheckout() {
   document.querySelectorAll('input[name=res]').forEach(r => r.addEventListener('change', () => {
     const amount = r.value === 'uhd' ? t.uhdPrice : t.price;
     $('#payTotal').textContent = won(amount);
-    $('#payBtn').textContent = `${won(amount)} 결제하기`;
+    payLabel();
     if (S.widgets) S.widgets.setAmount({ currency: 'KRW', value: amount });
   }));
+  const payLabel = () => {
+    const uhd = document.querySelector('input[name=res]:checked')?.value === 'uhd';
+    $('#payBtn').textContent = useBank() ? '입금 안내 받기' : `${won(uhd ? t.uhdPrice : t.price)} 결제하기`;
+  };
+  document.querySelectorAll('input[name=method]').forEach(r => r.addEventListener('change', () => {
+    $('#bankBox').classList.toggle('hidden', !useBank());
+    $('#payment-method').classList.toggle('hidden', useBank());
+    $('#agreement').classList.toggle('hidden', useBank());
+    payLabel();
+  }));
+  $('#receiptType').addEventListener('change', (e) => $('#receiptField').classList.toggle('hidden', e.target.value === 'none'));
+  payLabel();
+  if (!S.cfg.payOpen) return;
   if (S.cfg.tossMock) {
     $('#payment-method').innerHTML = '<div class="notice"><b>시험 모드</b> 실제 결제 없이 결제 완료로 처리해요.</div>';
     return;
@@ -159,6 +192,7 @@ function loadToss() {
     document.head.appendChild(s);
   });
 }
+const useBank = () => !S.cfg.payOpen || document.querySelector('input[name=method]:checked')?.value === 'bank';
 async function pay() {
   const btn = $('#payBtn'), errEl = $('#payError');
   errEl.classList.add('hidden');
@@ -166,6 +200,15 @@ async function pay() {
   if (phone.length < 10) { errEl.textContent = '휴대폰 번호를 확인해 주세요.'; errEl.classList.remove('hidden'); return; }
   if (!$('#agreeRefund').checked) { errEl.textContent = '환불 규정을 확인해 주세요.'; errEl.classList.remove('hidden'); return; }
   btn.disabled = true;
+  if (useBank()) {
+    try {
+      await api(`/api/projects/${id}/bank-order`, { method: 'POST', token, body: {
+        phone, uhd: document.querySelector('input[name=res]:checked')?.value === 'uhd',
+        depositor: $('#depositor').value, receiptType: $('#receiptType').value, receiptNo: $('#receiptNo').value } });
+      await poll();
+    } catch (err) { errEl.textContent = err.message; errEl.classList.remove('hidden'); btn.disabled = false; }
+    return;
+  }
   try {
     const order = await api(`/api/projects/${id}/checkout`, { method: 'POST', token, body: { phone, uhd: document.querySelector('input[name=res]:checked')?.value === 'uhd' } });
     const back = `?p=${encodeURIComponent(id)}&t=${encodeURIComponent(token)}`;
@@ -193,15 +236,15 @@ async function poll() {
     const p = await api(`/api/projects/${id}`, { token });
     S.project = p;
     render();
-    const waiting = ['preview_queued', 'preview_rendering', 'final_queued', 'final_rendering'].includes(p.status);
+    const waiting = ['preview_queued', 'preview_rendering', 'bank_waiting', 'final_queued', 'final_rendering'].includes(p.status);
     clearTimeout(S.timer);
-    if (waiting) S.timer = setTimeout(poll, document.hidden ? 20000 : 6000);
+    if (waiting) S.timer = setTimeout(poll, p.status === 'bank_waiting' ? 30000 : document.hidden ? 20000 : 6000);
   } catch (err) {
     toast(err.message);
     S.timer = setTimeout(poll, 15000);
   }
 }
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.project && /queued|rendering/.test(S.project.status)) poll(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.project && /queued|rendering|bank_waiting/.test(S.project.status)) poll(); });
 
 (async () => {
   try {
