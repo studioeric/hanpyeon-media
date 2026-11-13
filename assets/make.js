@@ -1,5 +1,5 @@
 import { header, footer, api, params, esc, toast, loadTemplates, remember, projectUrl } from './common.js';
-import { uploadFile, photoDate, videoOrient, isVideo, isImage } from './upload.js';
+import { uploadFile, photoDate, videoOrient, isVideo, isImage, shrinkPhoto } from './upload.js';
 
 header();
 footer();
@@ -11,7 +11,7 @@ const S = {
   local: {},      // 업로드 키 -> { slot, file, url, progress, error, uploading }
   queue: [], running: 0, seq: 0
 };
-const CONCURRENCY = 2;
+const CONCURRENCY = 3;
 
 if (!id || !token) location.replace('/');
 
@@ -278,10 +278,19 @@ async function runUpload(key) {
   if (!loc) return;
   try {
     const takenAt = isImage(loc.file) ? await photoDate(loc.file) : null;
+    if (isImage(loc.file)) {
+      const lastMod = loc.file.lastModified, r = await shrinkPhoto(loc.file);
+      loc.file = r.file;
+      if (r.w && Math.max(r.w, r.h) < 1000 && !S.smallWarned) {
+        S.smallWarned = true;
+        toast('작은 사진이 있어요. 크게 나오는 장면에서는 흐려 보일 수 있어서, 원본 사진을 넣으면 더 선명해요.');
+      }
+      if (!takenAt) loc.lastMod = lastMod;
+    }
     let last = 0;
     loc.mediaId = await uploadFile({
       projectId: id, token, slot: loc.slot, file: loc.file,
-      takenAt: takenAt || new Date(loc.file.lastModified).toISOString(),
+      takenAt: takenAt || new Date(loc.lastMod || loc.file.lastModified).toISOString(),
       onProgress: (p) => {
         loc.progress = p;
         if (p - last > 0.03 || p === 1) { last = p; renderScenesSoon(); }
@@ -498,3 +507,13 @@ $('#previewBtn').addEventListener('click', async () => {
     $('#scenes').innerHTML = `<p class="error-text">${esc(err.message)}</p><a class="btn line" href="/orders">제작 내역으로</a>`;
   }
 })();
+
+// PC 크롬은 아이폰 HEIC 사진을 화면에 못 그린다. 깨진 그림 대신 '사진 넣음'으로 보여 준다(영상에는 그대로 잘 들어간다)
+document.addEventListener('error', (e) => {
+  const el = e.target;
+  if (el && el.tagName === 'IMG' && el.closest('.slot')) {
+    const s = document.createElement('span'); s.className = 'heic-ok'; s.textContent = '사진 넣음';
+    s.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f4efe9;color:#6b5f57;font-size:12px;font-weight:600';
+    el.replaceWith(s);
+  }
+}, true);

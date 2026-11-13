@@ -28,7 +28,7 @@ export function seriesCard(data, s, type) {
   const price = type ? (p.status === 'available' ? won(p.price) : '') : (isFinite(min) ? `${won(min)}부터` : '');
   return `<a class="card tcard" href="${seriesUrl(s, type || '')}" data-clip="${esc(p.clip || '')}">
       <span class="th${tall ? ' tall' : ''}">
-        ${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy">` : ''}
+        ${p.thumb ? `<img src="${esc(p.thumb)}" alt="" decoding="async">` : ''}
         ${s.badge ? `<span class="badge">${esc(s.badge)}</span>` : ''}
         <span class="play" aria-hidden="true">▶ 샘플 보기</span>
       </span>

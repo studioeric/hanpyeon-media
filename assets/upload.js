@@ -99,6 +99,33 @@ function readExif(v, tiff) {
   return m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}` : null;
 }
 
+// 사진을 올리기 전에 알맞은 크기로 줄인다(긴 쪽 4000px, JPEG 90%). 4K 완성본에도 충분하고, 폰 원본(5~30MB)보다 훨씬 빨리 올라간다.
+// 회전 정보는 반영해서 바로 세운다. 투명한 부분은 흰 바탕. 브라우저가 못 여는 형식(PC 크롬의 HEIC 등)이나 이미 작은 사진은 그대로 올린다.
+// 돌려주는 값: { file, w, h } (w, h는 알 수 없으면 0)
+const MAX_SIDE = 4000;
+export async function shrinkPhoto(file) {
+  const keep = (w = 0, h = 0) => ({ file, w, h });
+  if (!isImage(file) || /gif$/i.test(file.type)) return keep();
+  let url;
+  try {
+    url = URL.createObjectURL(file);
+    const img = new Image(); img.src = url; await img.decode();
+    const w = img.naturalWidth, h = img.naturalHeight; if (!w || !h) return keep();
+    const big = Math.max(w, h) > MAX_SIDE, heavy = file.size > 2.5 * 1024 * 1024, jpeg = /jpe?g$/i.test(file.type) || /\.jpe?g$/i.test(file.name);
+    if (!big && !heavy && jpeg) return keep(w, h);
+    const s = Math.min(1, MAX_SIDE / Math.max(w, h)), tw = Math.round(w * s), th = Math.round(h * s);
+    const c = document.createElement('canvas'); c.width = tw; c.height = th;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, tw, th); g.imageSmoothingQuality = 'high';
+    g.drawImage(img, 0, 0, tw, th);
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9));
+    c.width = c.height = 0;
+    if (!blob || (blob.size >= file.size && !big)) return keep(w, h);
+    const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+    return { file: new File([blob], name, { type: 'image/jpeg', lastModified: file.lastModified }), w: tw, h: th };
+  } catch { return keep(); }
+  finally { if (url) URL.revokeObjectURL(url); }
+}
+
 // 영상이 가로인지 세로인지 (브라우저가 회전 정보를 반영해 알려 준다)
 export function videoOrient(file) {
   return new Promise((resolve) => {

@@ -181,9 +181,27 @@ button { cursor: pointer; }
   .q { flex: 0 0 auto; padding: 10px 16px; font-size: 14px; }
   .best { padding-top: 48px; }
   .best h2 { font-size: 24px; }
-  .grid { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .steps { grid-template-columns: 1fr; margin-top: 48px; padding: 24px; }
+  /* 휴대폰: 배너는 영상 하나 + 작은 안내 두 칸을 나란히, 템플릿은 두 줄로 빨리 보이게 (11/13) */
+  .bn-video { grid-column: 1 / -1; aspect-ratio: 1 / 1; }
+  .bn-video::after { background: linear-gradient(rgba(0,0,0,0) 52%, rgba(20,12,16,.86) 100%); }
+  .banners { grid-template-columns: 1fr 1fr; }
+  .bn-pink, .bn-mint { min-height: 0; padding: 16px; justify-content: flex-start; }
+  .bn-pink b, .bn-mint b { font-size: 15px; }
+  .bn-pink b br, .bn-mint b br { display: none; }
+  .bn-pink small, .bn-mint small { font-size: 12px; line-height: 1.5; }
+  .bn .big, .bn .big.sm { font-size: 30px; margin-bottom: 8px; }
+  .card { padding: 8px 8px 14px; border-radius: 16px; }
+  .card .th { border-radius: 10px; }
+  .card h3 { margin: 10px 0 2px; font-size: 15px; }
+  .card.tcard p.tag { font-size: 12px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding: 0 2px; }
+  .card.tcard .kinds { display: none; }
+  .pill { margin-top: 8px; padding: 4px 11px; font-size: 13px; }
+  .best .tabs { margin: 16px 0 18px; }
 }
+.nav-cats { scrollbar-width: none; }
+.nav-cats::-webkit-scrollbar { display: none; }
 
 /* 자주 묻는 질문 */
 .faq { max-width: 820px; padding-top: 48px; padding-bottom: 96px; }
@@ -375,3 +393,28 @@ a.tcard { color: inherit; text-decoration: none; }
 .others { margin-top: 64px; }
 .others h2 { margin: 0 0 18px; font-size: 22px; color: var(--ink); }
 a.bn { text-decoration: none; color: #fff; }
+@media (max-width: 640px) {
+  .bn-video { aspect-ratio: 4 / 3; }
+  .cat-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+  .cat-tile { align-items: center; padding: 12px 4px; border-radius: 16px; text-align: center; gap: 2px; }
+  .cat-tile em { font-size: 24px; margin-bottom: 2px; }
+  .cat-tile b { font-size: 14px; }
+  .cat-tile small { display: none; }
+  .cat-tile span { margin-top: 2px; font-size: 11px; }
+}
+@media (max-width: 640px) {
+  .bn-pink small, .bn-mint small { display: none; }
+  .bn-pink, .bn-mint { padding: 14px 16px; }
+  .bn .big, .bn .big.sm { font-size: 26px; margin-bottom: 4px; }
+  .best .tabs { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; margin-left: -18px; margin-right: -18px; padding: 0 18px; scrollbar-width: none; }
+  .best .tabs::-webkit-scrollbar { display: none; }
+  .best .tabs button { flex: 0 0 auto; padding: 8px 16px; }
+}
+/* 제작 화면: 휴대폰에서 칸 이름이 잘리지 않게 한 줄 3칸, 이름은 3줄까지 (11/13) */
+@media (max-width: 720px) {
+  .slot-wrap { width: calc((100% - 20px) / 3); }
+  .slot { gap: 2px; }
+  .slot:not(.filled) .kind { font-size: 11.5px; line-height: 1.35; padding: 0 6px; text-align: center; word-break: keep-all;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .slot:not(.filled) svg { width: 18px; height: 18px; flex: 0 0 auto; }
+}
