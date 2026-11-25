@@ -29,7 +29,7 @@ export function seriesCard(data, s, type) {
   return `<a class="card tcard" href="${seriesUrl(s, type || '')}" data-clip="${esc(p.clip || '')}">
       <span class="th${tall ? ' tall' : ''}">
         ${p.thumb ? `<img src="${esc(p.thumb)}" alt="" decoding="async">` : ''}
-        ${s.badge ? `<span class="badge">${esc(s.badge)}</span>` : ''}
+        ${s.badge && s.badge !== 'NEW' ? `<span class="badge">${esc(s.badge)}</span>` : ''}
         <span class="play" aria-hidden="true">▶ 샘플 보기</span>
       </span>
       <h3>${esc(s.name)}</h3>
