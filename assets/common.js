@@ -94,6 +94,7 @@ export function footer() {
         <a href="/privacy"><b>개인정보처리방침</b></a>
         <a href="/refund">환불 규정</a>
         <a href="/faq">자주 묻는 질문</a>
+        <a href="/trial">체험단 모집</a>
         <a href="/partner">제휴문의</a>
         <a href="/credits">샘플 소재 출처</a>
       </nav>
