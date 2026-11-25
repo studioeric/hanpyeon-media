@@ -1,4 +1,4 @@
-import { header, footer, loadTemplates, esc } from './common.js';
+import { header, footer, loadTemplates, esc, history, projectUrl } from './common.js';
 import { seriesCard, productsOf, typesOf, bindHoverClips } from './series.js';
 
 header('home');
@@ -75,3 +75,18 @@ document.addEventListener('click', (e) => {
     $('#grid').innerHTML = `<p class="error-text">${esc(err.message)}</p>`;
   }
 })();
+
+// 만들던 영상이 있으면 홈 위쪽에서 바로 이어 하게 한다
+try {
+  const last = history()[0];
+  const quick = document.getElementById('quick');
+  if (last && last.id && quick) {
+    const a = document.createElement('a');
+    a.className = 'resume';
+    a.href = projectUrl('make.html', last.id, last.token);
+    a.innerHTML = `<span><b>만들던 영상이 있어요</b><br><span class="small sub">${esc(last.name || '내 영상')} · 이어서 만들기</span></span><span aria-hidden="true">›</span>`;
+    quick.after(a);
+    const more = history().length > 1 ? document.createElement('a') : null;
+    if (more) { more.href = '/orders'; more.className = 'small sub'; more.style.cssText = 'display:block;margin-top:6px;text-align:right'; more.textContent = '제작 내역 전체 보기 ›'; a.after(more); }
+  }
+} catch (e) {}

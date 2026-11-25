@@ -143,6 +143,7 @@ async function renderCheckout() {
     <label class="check"><input type="checkbox" id="agreeRefund"> <span>디지털 콘텐츠라 완성 영상을 만들기 시작한 뒤에는 환불이 어렵다는 점을 확인했어요 <a href="/refund" target="_blank">환불 규정</a></span></label>
     <div id="payError" class="error-text hidden" role="alert"></div>
     <button class="btn lg block" type="button" id="payBtn">${won(t.price)} 결제하기</button>
+    <p class="small" style="margin:4px 0 0;line-height:1.7">제작에 실패하거나 24시간 안에 완성되지 않으면 전액 환불해 드려요. 문의 qwove.corp@gmail.com</p>
     <p class="small sub" style="margin:4px 0 0;line-height:1.7">판매자 ${bizLines()}</p>
     <details class="small" style="margin-top:4px"><summary style="cursor:pointer">체험단 이용권이 있어요</summary>
       <div style="display:flex;gap:8px;margin-top:10px"><input id="couponCode" placeholder="이용권 번호" autocomplete="off" style="flex:1;min-width:0;text-transform:uppercase">

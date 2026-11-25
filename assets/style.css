@@ -418,3 +418,13 @@ a.bn { text-decoration: none; color: #fff; }
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .slot:not(.filled) svg { width: 18px; height: 18px; flex: 0 0 auto; }
 }
+
+/* 2026-11-25 UX: 카드 비교 정보, 구매 안내, 사진 준비표 */
+.tcard .spec { margin: 2px 0 8px; font-size: 12.5px; color: var(--ink2, #555); }
+.buy-facts { list-style: none; margin: 14px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--soft-bg, #f7f5f2); display: flex; flex-direction: column; gap: 6px; line-height: 1.6; }
+.buy-facts b { display: inline-block; min-width: 76px; color: var(--ink, #111); }
+.prep { margin-top: 12px; border: 1px solid var(--line, #e6e2dc); border-radius: 14px; padding: 12px 16px; }
+.prep summary { cursor: pointer; font-weight: 500; }
+.prep ul { margin: 10px 0 0; padding-left: 18px; line-height: 1.7; }
+.resume { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 14px 18px; border-radius: 14px; background: #fff4f8; text-decoration: none; color: inherit; }
+@media (max-width: 640px) { .tcard .spec { font-size: 11.5px; margin-bottom: 6px; } .buy-facts b { min-width: 0; margin-right: 6px; } }

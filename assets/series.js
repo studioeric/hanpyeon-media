@@ -35,6 +35,7 @@ export function seriesCard(data, s, type) {
       <h3>${esc(s.name)}</h3>
       <p class="tag">${esc(type ? `${typeLabel(data, s.category, p.type)} · ${p.duration || ''}` : s.tagline || '')}</p>
       ${type ? '' : `<p class="kinds">${kinds.map(k => `<span>${esc(k)}</span>`).join('')}</p>`}
+      ${ok ? `<p class="spec">${esc([type ? '' : typeLabel(data, s.category, p.type), p.duration, p.photos && `사진 ${p.photos}장`, p.videos ? `영상 ${p.videos}개` : '사진만 OK'].filter(Boolean).join(' · '))}</p>` : ''}
       ${ok && price ? `<span class="pill">${price}</span>` : `<span class="pill soon">곧 출시</span>`}
     </a>`;
 }
