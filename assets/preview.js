@@ -144,8 +144,22 @@ async function renderCheckout() {
     <div id="payError" class="error-text hidden" role="alert"></div>
     <button class="btn lg block" type="button" id="payBtn">${won(t.price)} 결제하기</button>
     <p class="small sub" style="margin:4px 0 0;line-height:1.7">판매자 ${bizLines()}</p>
+    <details class="small" style="margin-top:4px"><summary style="cursor:pointer">체험단 이용권이 있어요</summary>
+      <div style="display:flex;gap:8px;margin-top:10px"><input id="couponCode" placeholder="이용권 번호" autocomplete="off" style="flex:1;min-width:0;text-transform:uppercase">
+      <button class="btn ghost" type="button" id="couponBtn">무료로 받기</button></div>
+      <p class="sub" style="margin:6px 0 0">위 휴대폰 번호를 함께 적어 주세요. 풀HD 완성본을 무료로 만들어 드려요.</p>
+    </details>
   </div>`;
   $('#payBtn').addEventListener('click', pay);
+  $('#couponBtn').addEventListener('click', async () => {
+    const btn = $('#couponBtn'), errEl = $('#payError'); errEl.classList.add('hidden');
+    const phone = $('#phone').value.replace(/[^0-9]/g, ''), code = $('#couponCode').value.trim();
+    if (phone.length < 10) { errEl.textContent = '휴대폰 번호를 확인해 주세요.'; errEl.classList.remove('hidden'); return; }
+    if (!code) { errEl.textContent = '이용권 번호를 적어 주세요.'; errEl.classList.remove('hidden'); return; }
+    btn.disabled = true;
+    try { await api(`/api/projects/${id}/coupon`, { method: 'POST', token, body: { code, phone } }); location.reload(); }
+    catch (err) { errEl.textContent = err.message; errEl.classList.remove('hidden'); btn.disabled = false; }
+  });
   document.querySelectorAll('input[name=res]').forEach(r => r.addEventListener('change', () => {
     const amount = r.value === 'uhd' ? t.uhdPrice : t.price;
     $('#payTotal').textContent = won(amount);
