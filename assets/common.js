@@ -29,7 +29,29 @@ const MARK = `<svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><rec
 
 const CATS = [['dol', '돌잔치'], ['baby100', '백일'], ['wedding', '웨딩'], ['parents', '환갑·칠순']];
 
+
+// 단계별 이탈 측정 (개인정보 없음: 무작위 방문자 번호와 단계 이름만)
+export function sid() {
+  let v = '';
+  try { v = localStorage.getItem('hp_sid') || ''; } catch (e) {}
+  if (!/^[a-z0-9]{12}$/.test(v)) {
+    v = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => 'abcdefghijklmnopqrstuvwxyz0123456789'[b % 36]).join('');
+    try { localStorage.setItem('hp_sid', v); } catch (e) {}
+  }
+  return v;
+}
+export function track(step, c = '') {
+  try {
+    if (location.pathname.startsWith('/admin')) return;
+    const body = JSON.stringify({ s: step, sid: sid(), c: String(c || '').slice(0, 40), r: document.referrer ? new URL(document.referrer).hostname.slice(0, 60) : '' });
+    if (!(navigator.sendBeacon && navigator.sendBeacon('/api/ev', new Blob([body], { type: 'application/json' }))))
+      fetch('/api/ev', { method: 'POST', body, headers: { 'content-type': 'application/json' }, keepalive: true }).catch(() => {});
+  } catch (e) {}
+}
+const PV = { '/': 'pv_home', '/index.html': 'pv_home', '/template': 'pv_template', '/template.html': 'pv_template', '/make': 'pv_make', '/make.html': 'pv_make', '/preview': 'pv_preview', '/preview.html': 'pv_preview', '/success': 'pv_success', '/success.html': 'pv_success' };
+
 export function header(active) {
+  { const pv = PV[location.pathname] || 'pv_other'; track(pv, pv === 'pv_template' ? (new URLSearchParams(location.search).get('s') || '') : ''); }   // 토큰 같은 주소 값은 보내지 않는다
   const el = document.querySelector('[data-site-head]');
   if (!el) return;
   el.className = 'site-head';
@@ -89,7 +111,7 @@ export async function api(path, { method = 'GET', body, token, headers = {} } = 
   try {
     res = await fetch(url, {
       method,
-      headers: body !== undefined ? { 'content-type': 'application/json', ...headers } : headers,
+      headers: { 'x-sid': sid(), ...(body !== undefined ? { 'content-type': 'application/json' } : {}), ...headers },
       body: body !== undefined ? JSON.stringify(body) : undefined
     });
   } catch (e) {

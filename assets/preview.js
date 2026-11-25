@@ -1,4 +1,4 @@
-import { header, footer, api, params, esc, won, toast, loadTemplates, remember, projectUrl, STATUS, bizLines } from './common.js';
+import { header, footer, api, params, esc, won, toast, loadTemplates, remember, projectUrl, STATUS, bizLines, track } from './common.js';
 
 header();
 footer();
@@ -198,6 +198,7 @@ async function pay() {
   errEl.classList.add('hidden');
   const phone = $('#phone').value.replace(/[^0-9]/g, '');
   if (phone.length < 10) { errEl.textContent = '휴대폰 번호를 확인해 주세요.'; errEl.classList.remove('hidden'); return; }
+  track('pay_click');
   if (!$('#agreeRefund').checked) { errEl.textContent = '환불 규정을 확인해 주세요.'; errEl.classList.remove('hidden'); return; }
   btn.disabled = true;
   if (useBank()) {

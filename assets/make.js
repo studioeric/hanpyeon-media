@@ -1,4 +1,4 @@
-import { header, footer, api, params, esc, toast, loadTemplates, remember, projectUrl } from './common.js';
+import { header, footer, api, params, esc, toast, loadTemplates, remember, projectUrl, track } from './common.js';
 import { uploadFile, photoDate, videoOrient, isVideo, isImage, shrinkPhoto } from './upload.js';
 
 header();
@@ -296,6 +296,7 @@ async function runUpload(key) {
         if (p - last > 0.03 || p === 1) { last = p; renderScenesSoon(); }
       }
     });
+    if (!S.tracked) { S.tracked = 1; track('upload', S.code || ''); }
     loc.uploading = false;
     await refresh();
   } catch (err) {
