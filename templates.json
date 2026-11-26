@@ -136,9 +136,9 @@
       "customerMusic": true,
       "captions": false,
       "videos": 0,
-      "thumb": "/media/dol_star_main_q1.webp",
-      "clip": "/media/dol_star_main_q1.mp4",
-      "sample": "/media/sample_dol_star_main_q1.mp4",
+      "thumb": "/media/dol_star_main_q2.webp",
+      "clip": "/media/dol_star_main_q2.mp4",
+      "sample": "/media/sample_dol_star_main_q2.mp4",
       "fields": [
         {
           "key": "name",
